@@ -1,4 +1,4 @@
-ARG alpine_version=3.16.3
+ARG alpine_version=edge
 FROM alpine:${alpine_version} AS base
 
 ARG asciidoctor_version=2.0.18
@@ -51,7 +51,11 @@ FROM base AS build-haskell
 
 ## Always use the latest Cabal (and dependencies) versions available for the current Alpine distribution
 # hadolint ignore=DL3018
-RUN apk add --no-cache \
+RUN apk add --no-cache clang14 llvm14 \
+  && export PATH="/usr/lib/llvm14/bin:$PATH" \
+  && git clone https://github.com/marc-bouvier-forks/fork-erd-2022-11-ghc-9.0.2-aarm64 \
+  && cd fork-erd-2022-11-ghc-9.0.2-aarm64 \
+  && apk add --no-cache \
   alpine-sdk \
   cabal \
   ghc-dev \
@@ -65,7 +69,7 @@ RUN apk add --no-cache \
   xz \
   zlib-dev \
   && cabal v2-update \
-  && cabal v2-install erd
+  && cabal v2-install
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Final image
